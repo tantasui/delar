@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #fcf9f7;
+    color: #1b1c1b;
+    /* No shadows — design system rule */
+    --tw-shadow: none;
+  }
+
+  /* Disable box shadows globally per design system */
+  * {
+    box-shadow: none !important;
+  }
+}
+
+@layer components {
+  /* Button variants */
+  .btn-primary {
+    @apply bg-primary text-on-primary font-semibold px-10 py-3 rounded-full transition-all duration-150 hover:opacity-90 active:scale-95 text-sm;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary border border-subtle-ash font-semibold px-10 py-3 rounded-full transition-all duration-150 hover:bg-marketplace-gray active:scale-95 text-sm;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-primary font-semibold px-4 py-2 rounded-full transition-all duration-150 hover:bg-surface-container-high text-sm;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-white border border-subtle-ash rounded-lg transition-all duration-150 hover:border-primary;
+  }
+
+  /* Input base */
+  .input-base {
+    @apply bg-marketplace-gray border border-transparent rounded focus:border-graphite-border focus:outline-none focus:ring-0 px-4 py-3 w-full text-body-md transition-all duration-150;
+  }
+
+  /* Pill badge */
+  .badge {
+    @apply bg-marketplace-gray text-on-surface text-xs font-semibold px-3 py-1 rounded-full;
+  }
+
+  /* Section container */
+  .container-site {
+    @apply max-w-site mx-auto px-4 md:px-10;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar hide */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, #f4f4f0 25%, #e8e8e4 50%, #f4f4f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
