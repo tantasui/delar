@@ -1,0 +1,9 @@
+[package]
+name = "delar"
+version = "0.1.0"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+delar = "0x0"
