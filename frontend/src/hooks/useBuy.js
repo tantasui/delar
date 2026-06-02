@@ -15,7 +15,8 @@ export function useBuy() {
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState(null)
 
-  async function buy(productId, priceUsdc) {
+  // affiliateAddress — optional, wires into buy_with_affiliate on-chain
+  async function buy(productId, priceUsdc, affiliateAddress = null) {
     if (!account) return
     setIsPending(true)
     setError(null)
@@ -24,21 +25,35 @@ export function useBuy() {
       const tx = new Transaction()
       tx.setSender(account.address)
 
-      const payment = await coinWithBalance({
+      const payment = coinWithBalance({
         balance: priceUsdc,
         type: USDC_TYPE,
       })
 
-      tx.moveCall({
-        target: `${PACKAGE_ID}::checkout::buy`,
-        typeArguments: [USDC_TYPE],
-        arguments: [
-          tx.object(productId),
-          tx.object(FEE_CONFIG_ID),
-          payment,
-          tx.object.clock(),
-        ],
-      })
+      if (affiliateAddress) {
+        tx.moveCall({
+          target: `${PACKAGE_ID}::checkout::buy_with_affiliate`,
+          typeArguments: [USDC_TYPE],
+          arguments: [
+            tx.object(productId),
+            tx.object(FEE_CONFIG_ID),
+            payment,
+            tx.pure.address(affiliateAddress),
+            tx.object.clock(),
+          ],
+        })
+      } else {
+        tx.moveCall({
+          target: `${PACKAGE_ID}::checkout::buy`,
+          typeArguments: [USDC_TYPE],
+          arguments: [
+            tx.object(productId),
+            tx.object(FEE_CONFIG_ID),
+            payment,
+            tx.object.clock(),
+          ],
+        })
+      }
 
       const result = await dAppKit.signAndExecuteTransaction({ transaction: tx })
       if (result.FailedTransaction) {

@@ -4,6 +4,7 @@ import DiscoverPage from './pages/DiscoverPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import DashboardPage from './pages/DashboardPage'
 import LibraryPage from './pages/LibraryPage'
+import CreatorProfilePage from './pages/CreatorProfilePage'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/library" element={<LibraryPage />} />
+        <Route path="/creator/:address" element={<CreatorProfilePage />} />
       </Routes>
     </>
   )

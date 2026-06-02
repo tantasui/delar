@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiGrid, FiPackage, FiDollarSign, FiBarChart2, FiSettings,
-  FiPlus, FiEdit2, FiTrash2, FiExternalLink, FiTrendingUp, FiUsers,
+  FiPlus, FiTrendingUp, FiUsers,
   FiX, FiUploadCloud, FiArrowLeft,
 } from 'react-icons/fi'
 import Footer from '../components/Footer'
@@ -10,6 +10,7 @@ import { useCurrentAccount } from '@mysten/dapp-kit-react'
 import { useProducts } from '../hooks/useProducts'
 import { useReceipts } from '../hooks/useReceipts'
 import { usePublish } from '../hooks/usePublish'
+import { useSalesHistory } from '../hooks/useSalesHistory'
 import { fetchCoins } from '../services/tatum'
 import { useQuery } from '@tanstack/react-query'
 
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const { products: allProducts } = useProducts()
   const { data: receipts } = useReceipts()
   const { publish, isPending: publishing, error: publishError, step } = usePublish()
+  const { data: salesHistory, isLoading: salesLoading } = useSalesHistory()
   const [activeTab, setActiveTab] = useState('overview')
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadStep, setUploadStep] = useState(0)
@@ -215,9 +217,45 @@ export default function DashboardPage() {
               <h1 className="text-headline-lg font-bold text-primary mb-2">Sales History</h1>
               <p className="text-on-surface-variant mb-8">All transactions in USDC.</p>
               <div className="card overflow-hidden">
-                <div className="p-12 text-center text-on-surface-variant text-sm">
-                  Sales history will appear here after you make your first sales. Check back soon!
-                </div>
+                {salesLoading ? (
+                  <div className="p-12 text-center text-on-surface-variant text-sm">Loading sales...</div>
+                ) : !salesHistory || salesHistory.length === 0 ? (
+                  <div className="p-12 text-center text-on-surface-variant text-sm">
+                    No sales yet. Share your products to start earning!
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-marketplace-gray">
+                        <tr>
+                          {['Buyer', 'Amount', 'Affiliate', 'Date'].map((h) => (
+                            <th key={h} className="px-5 py-3 text-left text-[11px] text-on-surface-variant font-semibold uppercase tracking-wider">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {salesHistory.map((sale) => (
+                          <tr key={sale.txDigest} className="border-t border-subtle-ash hover:bg-marketplace-gray/50 transition-colors">
+                            <td className="px-5 py-4 font-mono text-xs text-primary">
+                              {sale.buyer.slice(0, 6)}...{sale.buyer.slice(-4)}
+                            </td>
+                            <td className="px-5 py-4 text-sm font-bold text-primary">
+                              USDC {sale.amountPaidUsdc.toFixed(2)}
+                            </td>
+                            <td className="px-5 py-4 text-xs text-on-surface-variant">
+                              {sale.affiliate
+                                ? `${sale.affiliate.slice(0, 6)}...${sale.affiliate.slice(-4)}`
+                                : '—'}
+                            </td>
+                            <td className="px-5 py-4 text-xs text-on-surface-variant">
+                              {new Date(sale.timestamp).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </section>
           )}
