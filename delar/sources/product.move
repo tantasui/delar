@@ -3,12 +3,15 @@ module delar::product;
 use std::string::String;
 use sui::clock::Clock;
 use sui::event;
+use sui::vec_set::{Self, VecSet};
 
 const ENotCreator: u64 = 0;
 const EInvalidProductType: u64 = 1;
 const EPriceTooLow: u64 = 2;
 const EEmptyBlobId: u64 = 3;
 const EInvalidSealId: u64 = 4;
+const EAffiliateAlreadyAdded: u64 = 5;
+const EAffiliateNotFound: u64 = 6;
 
 const MIN_PRICE: u64 = 10000;
 const PRODUCT_TYPE_COUNT: u8 = 6;
@@ -27,6 +30,7 @@ public struct ProductListing has key, store {
     is_active: bool,
     total_sales: u64,
     affiliate_bps: u64,
+    affiliates: VecSet<address>,
     created_at: u64,
     updated_at: u64,
 }
@@ -49,6 +53,18 @@ public struct ProductUpdated has copy, drop {
 public struct ProductDeactivated has copy, drop {
     product_id: ID,
     is_active: bool,
+    timestamp: u64,
+}
+
+public struct AffiliateAdded has copy, drop {
+    product_id: ID,
+    affiliate: address,
+    timestamp: u64,
+}
+
+public struct AffiliateRemoved has copy, drop {
+    product_id: ID,
+    affiliate: address,
     timestamp: u64,
 }
 
@@ -86,6 +102,7 @@ public fun publish_product(
         is_active: true,
         total_sales: 0,
         affiliate_bps,
+        affiliates: vec_set::empty(),
         created_at: now,
         updated_at: now,
     };
@@ -99,6 +116,40 @@ public fun publish_product(
     });
 
     product
+}
+
+public fun add_affiliate(
+    product: &mut ProductListing,
+    affiliate: address,
+    clock: &Clock,
+    ctx: &TxContext,
+) {
+    assert!(ctx.sender() == product.creator, ENotCreator);
+    assert!(!product.affiliates.contains(&affiliate), EAffiliateAlreadyAdded);
+    product.affiliates.insert(affiliate);
+
+    event::emit(AffiliateAdded {
+        product_id: object::id(product),
+        affiliate,
+        timestamp: clock.timestamp_ms(),
+    });
+}
+
+public fun remove_affiliate(
+    product: &mut ProductListing,
+    affiliate: address,
+    clock: &Clock,
+    ctx: &TxContext,
+) {
+    assert!(ctx.sender() == product.creator, ENotCreator);
+    assert!(product.affiliates.contains(&affiliate), EAffiliateNotFound);
+    product.affiliates.remove(&affiliate);
+
+    event::emit(AffiliateRemoved {
+        product_id: object::id(product),
+        affiliate,
+        timestamp: clock.timestamp_ms(),
+    });
 }
 
 public fun update_product(
@@ -164,6 +215,10 @@ public fun reactivate_product(
         is_active: true,
         timestamp: now,
     });
+}
+
+public fun is_approved_affiliate(product: &ProductListing, affiliate: address): bool {
+    product.affiliates.contains(&affiliate)
 }
 
 public fun blob_id(product: &ProductListing): String { product.blob_id }

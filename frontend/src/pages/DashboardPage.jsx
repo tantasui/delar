@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiGrid, FiPackage, FiDollarSign, FiTrendingUp, FiUsers,
-  FiPlus,
+  FiPlus, FiLink, FiTrash2,
   FiX, FiUploadCloud, FiArrowLeft,
 } from 'react-icons/fi'
 import Footer from '../components/Footer'
@@ -11,6 +11,7 @@ import { useProducts } from '../hooks/useProducts'
 import { useReceipts } from '../hooks/useReceipts'
 import { usePublish } from '../hooks/usePublish'
 import { useSalesHistory } from '../hooks/useSalesHistory'
+import { useAffiliates } from '../hooks/useAffiliates'
 import { fetchCoins } from '../services/tatum'
 import { useQuery } from '@tanstack/react-query'
 
@@ -28,7 +29,11 @@ export default function DashboardPage() {
   const { data: receipts } = useReceipts()
   const { publish, isPending: publishing, error: publishError, step } = usePublish()
   const { data: salesHistory, isLoading: salesLoading } = useSalesHistory()
+  const { addAffiliate, removeAffiliate, isPending: affiliatePending, error: affiliateError, setError: setAffiliateError } = useAffiliates()
   const [activeTab, setActiveTab] = useState('overview')
+  const [managingProductId, setManagingProductId] = useState(null)
+  const [newAffiliateAddr, setNewAffiliateAddr] = useState('')
+  const [copiedLink, setCopiedLink] = useState(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadStep, setUploadStep] = useState(0)
   const [form, setForm] = useState({ title: '', description: '', price: '', type: '0', commission: '' })
@@ -46,6 +51,7 @@ export default function DashboardPage() {
   })
 
   const myProducts = (allProducts || []).filter((p) => p.creator === account?.address)
+  const managingProduct = myProducts.find((p) => p.id === managingProductId) || null
   const totalSales = myProducts.reduce((s, p) => s + p.totalSales, 0)
   const totalRevenue = myProducts.reduce((s, p) => s + p.priceUsdc * p.totalSales, 0)
 
@@ -176,14 +182,14 @@ export default function DashboardPage() {
                   <table className="w-full">
                     <thead className="bg-marketplace-gray">
                       <tr>
-                        {['Product', 'Price', 'Sales', 'Status'].map(h => (
+                        {['Product', 'Price', 'Sales', 'Status', 'Affiliates'].map(h => (
                           <th key={h} className="px-5 py-3 text-left text-[11px] text-on-surface-variant font-semibold uppercase tracking-wider">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {myProducts.length === 0 ? (
-                        <tr><td colSpan={4} className="px-5 py-12 text-center text-on-surface-variant text-sm">No products yet. Upload your first one!</td></tr>
+                        <tr><td colSpan={5} className="px-5 py-12 text-center text-on-surface-variant text-sm">No products yet. Upload your first one!</td></tr>
                       ) : (
                         myProducts.map((p) => (
                           <tr key={p.id} className="border-t border-subtle-ash hover:bg-marketplace-gray/50 transition-colors">
@@ -196,6 +202,14 @@ export default function DashboardPage() {
                               <span className={`text-xs font-semibold px-3 py-1 rounded-full ${p.isActive ? 'bg-primary/10 text-primary' : 'bg-marketplace-gray text-on-surface-variant'}`}>
                                 {p.isActive ? 'Active' : 'Inactive'}
                               </span>
+                            </td>
+                            <td className="px-5 py-4">
+                              <button
+                                onClick={() => { setManagingProductId(p.id); setNewAffiliateAddr(''); setAffiliateError(null) }}
+                                className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                              >
+                                <FiUsers size={12} /> Manage ({p.affiliates?.length || 0})
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -257,6 +271,84 @@ export default function DashboardPage() {
 
         </main>
       </div>
+
+      {managingProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setManagingProductId(null)} />
+          <div className="relative bg-white rounded-2xl w-full max-w-[540px] p-8 max-h-[85vh] overflow-y-auto">
+            <button onClick={() => setManagingProductId(null)}
+              className="absolute top-5 right-5 p-2 rounded-full hover:bg-marketplace-gray transition-colors">
+              <FiX size={18} />
+            </button>
+
+            <h2 className="text-subheading font-semibold text-primary mb-1">Manage Affiliates</h2>
+            <p className="text-xs text-on-surface-variant mb-6">
+              {managingProduct.title}
+              {managingProduct.affiliateBps > 0
+                ? ` · ${managingProduct.affiliateBps / 100}% commission per sale`
+                : ' · No commission set — update product to add one'}
+            </p>
+
+            <div className="flex gap-2 mb-6">
+              <input
+                className="input-base flex-1 text-sm"
+                placeholder="Affiliate wallet address (0x...)"
+                value={newAffiliateAddr}
+                onChange={(e) => setNewAffiliateAddr(e.target.value)}
+              />
+              <button
+                disabled={affiliatePending || !newAffiliateAddr.startsWith('0x')}
+                onClick={async () => {
+                  await addAffiliate(managingProduct.id, newAffiliateAddr)
+                  setNewAffiliateAddr('')
+                }}
+                className="btn-primary text-sm px-5 disabled:opacity-50 whitespace-nowrap"
+              >
+                {affiliatePending ? 'Adding...' : 'Add'}
+              </button>
+            </div>
+
+            {affiliateError && <p className="text-xs text-error mb-4">{affiliateError}</p>}
+
+            {managingProduct.affiliates?.length === 0 ? (
+              <div className="text-center py-10 text-on-surface-variant text-sm">
+                No affiliates yet. Add a wallet address above to get started.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {managingProduct.affiliates.map((addr) => {
+                  const link = `${window.location.origin}/product/${managingProduct.id}?ref=${addr}`
+                  return (
+                    <div key={addr} className="flex items-center gap-3 bg-marketplace-gray rounded-lg px-4 py-3">
+                      <span className="font-mono text-xs text-primary flex-1 truncate">
+                        {addr.slice(0, 10)}...{addr.slice(-6)}
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(link)
+                          setCopiedLink(addr)
+                          setTimeout(() => setCopiedLink(null), 2000)
+                        }}
+                        className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline whitespace-nowrap"
+                      >
+                        <FiLink size={11} />
+                        {copiedLink === addr ? 'Copied!' : 'Copy link'}
+                      </button>
+                      <button
+                        disabled={affiliatePending}
+                        onClick={() => removeAffiliate(managingProduct.id, addr)}
+                        className="flex items-center gap-1 text-xs text-error font-semibold hover:underline disabled:opacity-50"
+                      >
+                        <FiTrash2 size={11} /> Remove
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {showUploadModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

@@ -11,6 +11,7 @@ use delar::receipt;
 const EProductNotActive: u64 = 0;
 const EIncorrectPayment: u64 = 1;
 const ECannotBuyOwnProduct: u64 = 2;
+const ENotApprovedAffiliate: u64 = 3;
 
 const BASIS_POINTS_DENOMINATOR: u64 = 10000;
 
@@ -43,6 +44,7 @@ public fun buy_with_affiliate<T>(
     clock: &Clock,
     ctx: &mut TxContext,
 ) {
+    assert!(product.is_approved_affiliate(affiliate), ENotApprovedAffiliate);
     buy_internal(product, fee_config, payment, option::some(affiliate), clock, ctx);
 }
 
