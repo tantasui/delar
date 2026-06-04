@@ -55,8 +55,6 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Discover', to: '/discover' },
-    { label: 'How it works', to: '#' },
-    { label: 'Pricing', to: '#' },
   ]
 
   return (

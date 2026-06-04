@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  FiGrid, FiPackage, FiDollarSign, FiBarChart2, FiSettings,
-  FiPlus, FiTrendingUp, FiUsers,
+  FiGrid, FiPackage, FiDollarSign, FiTrendingUp, FiUsers,
+  FiPlus,
   FiX, FiUploadCloud, FiArrowLeft,
 } from 'react-icons/fi'
 import Footer from '../components/Footer'
@@ -18,8 +18,6 @@ const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: FiGrid },
   { id: 'products', label: 'Products', icon: FiPackage },
   { id: 'sales', label: 'Sales', icon: FiDollarSign },
-  { id: 'analytics', label: 'Analytics', icon: FiBarChart2 },
-  { id: 'settings', label: 'Settings', icon: FiSettings },
 ]
 
 const UPLOAD_STEPS = ['Details', 'Upload', 'Publish']
@@ -93,10 +91,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-8">
           <Link to="/discover" className="text-[20px] font-bold text-primary tracking-tight">Delar</Link>
           <div className="hidden md:flex items-center gap-1">
-            {['Discover', 'How it works', 'Pricing'].map(l => (
-              <Link key={l} to={l === 'Discover' ? '/discover' : '#'}
-                className="text-sm text-on-surface-variant px-4 py-2 rounded-full hover:bg-marketplace-gray transition-colors">{l}</Link>
-            ))}
+            <Link to="/discover" className="text-sm text-on-surface-variant px-4 py-2 rounded-full hover:bg-marketplace-gray transition-colors">Discover</Link>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -260,39 +255,6 @@ export default function DashboardPage() {
             </section>
           )}
 
-          {activeTab === 'analytics' && (
-            <section>
-              <h1 className="text-headline-lg font-bold text-primary mb-2">Analytics</h1>
-              <p className="text-on-surface-variant mb-8">Track your revenue and sales trends.</p>
-              <div className="card p-6 mb-6">
-                <p className="text-sm font-semibold text-primary mb-4">Revenue (All time)</p>
-                <div className="h-48 bg-marketplace-gray rounded-lg flex items-center justify-center text-on-surface-variant text-sm">
-                  Analytics coming soon
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeTab === 'settings' && (
-            <section>
-              <h1 className="text-headline-lg font-bold text-primary mb-2">Settings</h1>
-              <p className="text-on-surface-variant mb-8">Manage your creator profile and payouts.</p>
-              <div className="card p-6">
-                <h2 className="text-sm font-semibold text-primary mb-5 pb-4 border-b border-subtle-ash">Profile</h2>
-                <p className="text-sm text-on-surface-variant mb-4">
-                  Wallet: <span className="font-mono text-primary">{account.address}</span>
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[['Display name', 'Your Name'], ['Store slug', 'yourstore']].map(([l, p]) => (
-                    <div key={l}>
-                      <label className="text-xs text-on-surface-variant font-semibold block mb-1.5">{l}</label>
-                      <input className="input-base" placeholder={p} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
         </main>
       </div>
 
