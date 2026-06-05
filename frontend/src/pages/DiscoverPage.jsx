@@ -7,12 +7,6 @@ import ProductCard from '../components/ProductCard'
 import { useProducts } from '../hooks/useProducts'
 import { CATEGORIES } from '../data/products'
 
-const AVATARS = [
-  { initials: 'AK', bg: '#ff90e8' },
-  { initials: 'BM', bg: '#ffc900' },
-  { initials: 'CL', bg: '#d1d5dc' },
-]
-
 const TYPE_LABELS = [
   'All', 'Ebook', 'Course', 'Template', 'Coaching', 'Software', 'Other',
 ]
@@ -67,17 +61,6 @@ export default function DiscoverPage() {
             <a href="#products" className="btn-secondary">Browse products</a>
           </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex -space-x-3">
-              {AVATARS.map(({ initials, bg }) => (
-                <div key={initials} className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-bold text-primary" style={{ backgroundColor: bg }}>
-                  {initials}
-                </div>
-              ))}
-              <div className="w-9 h-9 rounded-full border-2 border-white bg-on-surface flex items-center justify-center text-white text-xs font-bold">+</div>
-            </div>
-            <p className="text-xs text-on-surface-variant font-semibold">Trusted by 2,400+ creators</p>
-          </div>
         </section>
 
         <section className="container-site mb-16">

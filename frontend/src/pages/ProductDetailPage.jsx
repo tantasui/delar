@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import {
-  FiCheck, FiDownload, FiFileText, FiPackage, FiUsers, FiStar,
+  FiCheck, FiDownload, FiFileText, FiPackage, FiUsers,
   FiChevronRight, FiShare2, FiLink,
 } from 'react-icons/fi'
 import { useCurrentAccount } from '@mysten/dapp-kit-react'
@@ -14,12 +14,6 @@ import { useReceipts } from '../hooks/useReceipts'
 import { useBuy } from '../hooks/useBuy'
 
 const WALRUS_AGGREGATOR = import.meta.env.VITE_WALRUS_AGGREGATOR
-const TABS = ['Overview', 'Contents', 'Reviews']
-const MOCK_REVIEWS = [
-  { author: '0x71...f4e2', rating: 5, text: 'Absolutely worth every USDC. Changed how I work completely.', date: 'Mar 2026' },
-  { author: '0xab...12cd', rating: 5, text: 'Incredible quality. The templates are clean and easy to customise.', date: 'Feb 2026' },
-  { author: '0x9f...aa01', rating: 4, text: 'Really solid pack. Would love even more templates in future updates.', date: 'Jan 2026' },
-]
 
 export default function ProductDetailPage() {
   const { id } = useParams()
@@ -31,7 +25,6 @@ export default function ProductDetailPage() {
   const { buy, isPending: buying, error: buyError } = useBuy()
   const { products: allProducts } = useProducts()
   const account = useCurrentAccount()
-  const [activeTab, setActiveTab] = useState('Overview')
   const [shareCopied, setShareCopied] = useState(false)
   const [affiliateCopied, setAffiliateCopied] = useState(false)
 
@@ -101,77 +94,29 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              <div className="flex gap-2 mb-8">
-                {TABS.map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`text-sm font-semibold px-5 py-2 rounded-full transition-all ${
-                      activeTab === tab
-                        ? 'bg-primary text-white'
-                        : 'bg-marketplace-gray text-on-surface-variant hover:bg-surface-container-high'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
+              <div>
+                <h2 className="text-subheading font-semibold text-primary mb-4">About this product</h2>
+                <p className="text-body-md text-on-surface-variant mb-4 leading-relaxed">{product.description}</p>
+                <p className="text-body-md text-on-surface-variant mb-4 leading-relaxed">
+                  All files are encrypted and stored permanently on Walrus decentralised storage,
+                  secured by the Sui blockchain. Once you purchase, your access is yours forever.
+                </p>
+                <p className="text-body-md text-on-surface-variant mb-8 leading-relaxed">
+                  Payments are processed in USDC with instant settlement.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { icon: FiFileText, label: 'Digital Product' },
+                    { icon: FiPackage, label: 'Instant Download' },
+                    { icon: FiDownload, label: 'Unlimited Access' },
+                    { icon: FiUsers, label: `${product.totalSales} sales` },
+                  ].map(({ icon: Icon, label }) => (
+                    <span key={label} className="flex items-center gap-1.5 bg-marketplace-gray text-on-surface text-xs font-semibold px-3 py-2 rounded-full">
+                      <Icon size={12} /> {label}
+                    </span>
+                  ))}
+                </div>
               </div>
-
-              {activeTab === 'Overview' && (
-                <div>
-                  <h2 className="text-subheading font-semibold text-primary mb-4">About this product</h2>
-                  <p className="text-body-md text-on-surface-variant mb-4 leading-relaxed">{product.description}</p>
-                  <p className="text-body-md text-on-surface-variant mb-4 leading-relaxed">
-                    All files are encrypted and stored permanently on Walrus decentralised storage,
-                    secured by the Sui blockchain. Once you purchase, your access is yours forever.
-                  </p>
-                  <p className="text-body-md text-on-surface-variant mb-8 leading-relaxed">
-                    Payments are processed in USDC with instant settlement.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { icon: FiFileText, label: 'Digital Product' },
-                      { icon: FiPackage, label: 'Instant Download' },
-                      { icon: FiDownload, label: 'Unlimited Access' },
-                      { icon: FiUsers, label: `${product.totalSales} sales` },
-                    ].map(({ icon: Icon, label }) => (
-                      <span key={label} className="flex items-center gap-1.5 bg-marketplace-gray text-on-surface text-xs font-semibold px-3 py-2 rounded-full">
-                        <Icon size={12} /> {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'Reviews' && (
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="flex gap-0.5">
-                      {[1,2,3,4,5].map((s) => (
-                        <FiStar key={s} size={16} className="fill-sunshine-yellow text-sunshine-yellow" />
-                      ))}
-                    </div>
-                    <span className="text-subheading font-bold text-primary">4.9</span>
-                    <span className="text-on-surface-variant text-sm">({MOCK_REVIEWS.length} reviews)</span>
-                  </div>
-                  <div className="flex flex-col gap-6">
-                    {MOCK_REVIEWS.map((r) => (
-                      <div key={r.author} className="border-b border-subtle-ash pb-6 last:border-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-mono text-sm font-semibold text-primary">{r.author}</span>
-                          <span className="text-xs text-on-surface-variant">{r.date}</span>
-                        </div>
-                        <div className="flex gap-0.5 mb-2">
-                          {[...Array(r.rating)].map((_, i) => (
-                            <FiStar key={i} size={12} className="fill-sunshine-yellow text-sunshine-yellow" />
-                          ))}
-                        </div>
-                        <p className="text-body-md text-on-surface-variant">{r.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="w-full lg:w-[380px] flex-shrink-0">

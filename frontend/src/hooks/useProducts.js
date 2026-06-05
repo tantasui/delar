@@ -18,6 +18,7 @@ function parseProductListing(obj) {
     price: Number(f.price_usdc) / USDC_DECIMALS,
     isActive: f.is_active,
     affiliateBps: Number(f.affiliate_bps),
+    affiliates: f.affiliates?.fields?.contents || f.affiliates?.contents || [],
     totalSales: Number(f.total_sales),
     createdAt: Number(f.created_at),
     updatedAt: Number(f.updated_at),
