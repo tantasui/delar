@@ -61,8 +61,9 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-subtle-ash h-16">
       <div className="container-site h-full flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link to="/discover" className="text-[20px] font-bold text-primary tracking-tight">
-            Delar
+          <Link to="/discover" className="flex items-center gap-2">
+            <img src="/delar_black_logo.jpg" alt="Delar" className="h-7 w-auto" />
+            <span className="text-[20px] font-bold text-primary tracking-tight">Delar</span>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map(({ label, to }) => (
