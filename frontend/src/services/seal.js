@@ -74,7 +74,7 @@ export async function encryptFile(file) {
 
   console.log('[seal] encrypted', {
     ciphertextBytes: result.encryptedObject.length,
-    overheadBytes: result.encryptedObject.length - data.length,
+    overheadBytes: result.encryptedObject.length - payload.length,
   })
 
   return {
