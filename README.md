@@ -2,20 +2,47 @@
 
 **Delar** is a decentralized marketplace for digital products built on [Sui](https://sui.io). Creators publish encrypted files, buyers pay USDC on-chain, and content is gated via threshold identity-based encryption (Seal). No central server. No chargebacks. No deplatforming.
 
-Built for the **Walrus** ecosystem at the Sui Hackathon 2026.
+Built for the **Tatum x Walrus Hackathon**.
 
 ---
 
 ## Problem
 
-Digital product marketplaces today suffer from:
+Creators everywhere face the same problems: geo-blocked payments, delayed payouts, high platform fees, account suspensions, content takedowns, and chargeback fraud.
 
-- **Centralized gatekeeping** — platforms can delist creators or freeze payouts
-- **Chargeback fraud** — credit card chargebacks leave creators unpaid
+Traditional digital product marketplaces force creators into a broken system:
+
+- **Geo-blocked payments** — platforms like Stripe and PayPal are unavailable or restricted in many countries
+- **Delayed payouts** — waiting 30+ days to receive money already earned
+- **High platform fees** — traditional marketplaces take 20–50% of every sale
+- **Account suspensions & content takedowns** — centralized platforms can delist creators or freeze payouts without recourse
+- **Chargeback fraud** — credit card chargebacks leave creators unpaid after delivering their work
 - **Piracy through sharing** — once a file is downloaded, it can be freely redistributed
-- **High fees** — traditional platforms take 20–50% of each sale
 
-Delar solves these using on-chain settlement (USDC), decentralized encrypted storage (Walrus), and identity-based access control (Seal). The file itself never lives on a server the operator controls, and decryption is gated by ownership of a Sui object (PurchaseReceipt) that cannot be transferred or copied.
+Delar changes that.
+
+Delar is a decentralized digital marketplace built on Sui where creators can sell digital products directly to anyone in the world and get paid instantly in USDC — using on-chain settlement, decentralized encrypted storage (Walrus), and identity-based access control (Seal). The file itself never lives on a server the operator controls, and decryption is gated by ownership of a `PurchaseReceipt` that cannot be transferred or copied.
+
+No Stripe. No PayPal. No waiting 30 days to get paid. No platform taking most of your revenue.
+
+Built on Sui, powered by Walrus, protected by Seal.
+
+The creator economy — without borders, without middlemen, without permission.
+
+---
+
+## Features
+
+- **Product uploads in minutes** — creators publish digital products with a simple upload flow; encryption and storage happen automatically in the browser
+- **Secure file encryption with Seal** — files are encrypted client-side using Mysten Labs' threshold identity-based encryption before leaving the creator's machine
+- **Permanent decentralized storage on Walrus** — encrypted blobs are stored on Walrus with configurable epoch retention, not on any server Delar controls
+- **Instant creator payouts in USDC** — payment flows atomically on-chain; creators receive USDC the moment a purchase completes
+- **On-chain purchase receipts** — every purchase mints a soulbound `PurchaseReceipt` NFT on Sui — a permanent, non-transferable proof of purchase
+- **Secure buyer-only downloads** — Seal key servers verify on-chain ownership before releasing decryption shards; only the receipt holder can decrypt
+- **Transparent affiliate commissions paid automatically on-chain** — creators set affiliate rates per product; commissions are split and paid atomically at checkout with no manual payouts
+- **Creator dashboard & analytics** — track sales, revenue, and product performance in one place
+- **Buyer library** — purchased products live in the buyer's library, ready to download and decrypt at any time
+- **Creator profiles** — public storefronts for creators to showcase their catalogue
 
 ---
 
@@ -306,4 +333,4 @@ Fetch:   GET  {AGGREGATOR}/v1/blobs/{blobId}
 
 ## License
 
-Built by [Rinku Technology Limited](https://rinku.technology) for the Sui Hackathon 2026.
+Built by [Rinku Technology Limited](https://rinku.technology) for the Tatum x Walrus Hackathon.
