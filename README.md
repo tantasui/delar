@@ -1,5 +1,13 @@
 # Delar — Decentralized Digital Product Marketplace
 
+![Sui](https://img.shields.io/badge/Built%20on-Sui-4CA2FF?style=flat-square&logo=sui&logoColor=white)
+![Walrus](https://img.shields.io/badge/Storage-Walrus-6C3FC7?style=flat-square)
+![Seal](https://img.shields.io/badge/Encryption-Seal-00B8A9?style=flat-square)
+![Tatum](https://img.shields.io/badge/RPC-Tatum-FF6D00?style=flat-square)
+![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Move](https://img.shields.io/badge/Contracts-Move-4CA2FF?style=flat-square)
+![Network](https://img.shields.io/badge/Network-Testnet-yellow?style=flat-square)
+
 **Delar** is a decentralized marketplace for digital products built on [Sui](https://sui.io). Creators publish encrypted files, buyers pay USDC on-chain, and content is gated via threshold identity-based encryption (Seal). No central server. No chargebacks. No deplatforming.
 
 Built for the **Tatum x Walrus Hackathon**.
@@ -28,6 +36,20 @@ No Stripe. No PayPal. No waiting 30 days to get paid. No platform taking most of
 Built on Sui, powered by Walrus, protected by Seal.
 
 The creator economy — without borders, without middlemen, without permission.
+
+---
+
+## How It Works
+
+### For Creators
+1. **Connect wallet** — sign in with any Sui-compatible wallet
+2. **Upload your product** — pick a file and set your price in USDC; Delar encrypts it locally and uploads the ciphertext to Walrus automatically
+3. **Get paid instantly** — every purchase triggers an on-chain USDC transfer directly to your wallet; no holding period, no withdrawal requests
+
+### For Buyers
+1. **Browse & buy** — find a product, click Buy Now, and sign a single transaction in your wallet
+2. **Receive your receipt** — a soulbound on-chain receipt is minted to your wallet as proof of purchase
+3. **Download & decrypt** — open your Library, click Download, sign once to create a session key, and the file decrypts locally in your browser
 
 ---
 
@@ -306,6 +328,58 @@ npx netlify deploy --prod --dir=frontend/dist
 
 ---
 
+## Tatum Integration
+
+[Tatum](https://tatum.io) is the backbone of Delar's data layer. Because Delar has no traditional backend or database, it relies entirely on on-chain data — and Tatum's Sui RPC gateway is what makes querying that data fast, reliable, and rate-limit-free at scale.
+
+### Why Tatum
+
+The public Sui fullnode endpoint (`fullnode.testnet.sui.io`) supports basic object reads but is not suitable for sustained event queries in production — it applies aggressive rate limits and does not guarantee indexing consistency. Tatum's managed gateway provides:
+
+- **Reliable event indexing** — consistent `suix_queryEvents` responses without the rate limiting that makes public nodes impractical for a marketplace
+- **Authenticated access** — requests carry an `x-api-key` header, giving each deployment its own isolated quota
+- **No backend required** — the frontend queries Tatum directly, meaning Delar ships zero server-side infrastructure
+
+### What Tatum Powers in Delar
+
+| Feature | RPC Method | Called Via |
+|---|---|---|
+| Marketplace product discovery | `suix_queryEvents` (product module) | `useProducts` hook |
+| Creator sales dashboard & analytics | `suix_queryEvents` (checkout module) | `useSalesHistory` hook |
+| Transaction event lookup | `sui_getEvents` | `queryEventsByTransaction` |
+| Creator USDC balance display | `suix_getCoins` | `fetchCoins` in Dashboard |
+
+### How It Works
+
+**Product discovery** — When a creator publishes a product, the Move contract emits a `ProductPublished` event. Delar's `useProducts` hook calls `suix_queryEvents` on the Tatum gateway, filtering by the `product` module, to retrieve all product IDs. It then fetches the full object data for each product in a single `sui_multiGetObjects` batch call.
+
+**Sales analytics** — When a purchase completes, `checkout::buy()` emits a `PurchaseCompleted` event containing the buyer, creator, amount, fee breakdown, and affiliate address. The `useSalesHistory` hook queries these events via Tatum and filters client-side by the connected creator's address, giving creators a real-time transaction history with no database.
+
+**USDC balance** — The creator dashboard fetches live USDC coin objects for the connected wallet using `suix_getCoins` via Tatum, so creators always see their current balance without a separate indexer.
+
+### Architecture: Two-Gateway Pattern
+
+Delar deliberately splits reads across two endpoints:
+
+```
+Event queries   →  Tatum RPC Gateway    (suix_queryEvents, suix_getCoins)
+Object reads    →  Sui Fullnode         (sui_multiGetObjects, suix_getOwnedObjects)
+Transactions    →  Sui wallet / dapp-kit (signing + submission)
+```
+
+Tatum handles the queries that require reliable indexing. The standard fullnode handles bulk object reads where consistency is guaranteed by object ID. This keeps costs and latency low while maintaining data integrity.
+
+### Configuration
+
+```env
+VITE_TATUM_RPC_URL=https://sui-testnet.gateway.tatum.io
+VITE_TATUM_API_KEY=your_tatum_api_key
+```
+
+Requests to the Tatum gateway automatically include the `x-api-key` header. Requests to the Sui fullnode (object reads) bypass the API key entirely.
+
+---
+
 ## Walrus & Seal Integration Notes
 
 ### Walrus HTTP API
@@ -328,6 +402,17 @@ Fetch:   GET  {AGGREGATOR}/v1/blobs/{blobId}
   - `0x73d0...6db75`
   - `0xf5d1...623c8`
 - Session key TTL: 30 minutes (cached in IndexedDB)
+
+---
+
+## Contributing
+
+Pull requests are welcome. For significant changes, open an issue first to discuss what you'd like to change.
+
+When contributing:
+- Move contract changes must include updated tests in `delar/tests/`
+- Frontend changes should maintain wallet connection and Seal session state handling
+- Run `sui move test` and `npm run build` before opening a PR
 
 ---
 
